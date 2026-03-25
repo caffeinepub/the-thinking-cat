@@ -61,14 +61,14 @@ actor {
   var nextProductId = 1;
   var nextFeedbackId = 1;
 
-  // Add sample seed data
+  // Seed: HAPPINESS post under 2-Minute Thoughts
   let sampleBlogPost1 : BlogPost = {
-    title = "Top 21 Affiliate Marketing Programs 2024";
-    content = "Discover the best affiliate marketing programs for 2024 and start earning passive income online.";
-    excerpt = "Explore the best affiliate marketing programs for 2024.";
-    category = "Affiliate Marketing";
-    author = "Jane Doe";
-    timestamp = 1_710_250_241_503_010;
+    title = "HAPPINESS";
+    content = "Just heard a bollywood song (Tumse Milke Dilka Hai Jo Haal Kya Kahe...) and my mind started further lyrics and within seconds i was humming the tune!\n\nHappiness is often imagined as something large such as an achievement, a milestone, a moment that stands out clearly in memory. But most of the time, it doesn't arrive like that. It shows up quietly. In small pauses between tasks. In a familiar song playing in the background. In the comfort of doing something without urgency. These moments rarely announce themselves, which is why they're easy to overlook.\n\nIn a way, happiness is less about intensity and more about frequency. Maybe that's why we often feel it in ordinary routines rather than extraordinary events.\n\nWe keep waiting for something significant to change how we feel, while smaller moments quietly pass by, doing the same work in a less noticeable way. Perhaps happiness isn't something we find. It's something we start noticing. Maybe that's why happiness is so underrated.\n\nAs Albus Dumbledore once said, \"Happiness can be found even in the darkest of times, if one only remembers to turn on the light.\"\n\n- The thinking cat";
+    excerpt = "Happiness is often imagined as something large. But most of the time, it shows up quietly — in a familiar song, in a small pause between tasks.";
+    category = "2-Minute Thoughts";
+    author = "The Thinking Cat";
+    timestamp = 1_742_900_000_000_000_000;
     postId = nextPostId;
   };
   blogPosts.add(nextPostId, sampleBlogPost1);
