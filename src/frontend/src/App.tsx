@@ -1,6 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -62,6 +68,19 @@ const PRODUCT_IMAGE_MAP: Record<string, string> = {
   "4": "/assets/uploads/image-019d2377-3185-700f-825b-eb958b005c2a-1.png",
 };
 
+const STATIC_BLOG_POSTS: BlogPost[] = [
+  {
+    postId: 1n,
+    title: "HAPPINESS",
+    content:
+      'Just heard a bollywood song (Tumse Milke Dilka Hai Jo Haal Kya Kahe...) and my mind started further lyrics and within seconds i was humming the tune!\n\nHappiness is often imagined as something large such as an achievement, a milestone, a moment that stands out clearly in memory. But most of the time, it does not arrive like that. It shows up quietly. In small pauses between tasks. In a familiar song playing in the background. In the comfort of doing something without urgency. These moments rarely announce themselves, which is why they are easy to overlook.\n\nIn a way, happiness is less about intensity and more about frequency. Maybe that is why we often feel it in ordinary routines rather than extraordinary events.\n\nWe keep waiting for something significant to change how we feel, while smaller moments quietly pass by, doing the same work in a less noticeable way. Perhaps happiness is not something we find. It is something we start noticing. Maybe that is why happiness is so underrated.\n\nAs Albus Dumbledore once said, "Happiness can be found even in the darkest of times, if one only remembers to turn on the light."\n\n- The thinking cat',
+    excerpt:
+      "Happiness is often imagined as something large. But most of the time, it shows up quietly — in a familiar song, in a small pause between tasks.",
+    category: "2-Minute Thoughts",
+    author: "The Thinking Cat",
+    timestamp: 1742900000000000000n,
+  },
+];
 const BLOG_CATEGORIES = [
   "All",
   "Science & Reflections",
@@ -253,6 +272,53 @@ function ProductEmptyState({ category }: { category: ProductCategory }) {
   );
 }
 
+// ─── Blog Post Modal ──────────────────────────────────────────────────────────
+function BlogPostModal({
+  post,
+  onClose,
+}: {
+  post: BlogPost | null;
+  onClose: () => void;
+}) {
+  const catColor = post
+    ? (CATEGORY_COLORS[post.category] ?? "bg-violet-100 text-violet-800")
+    : "";
+
+  return (
+    <Dialog open={post !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-2xl w-full max-h-[85vh] overflow-y-auto rounded-2xl p-0"
+        data-ocid="blog.modal"
+      >
+        {post && (
+          <>
+            <DialogHeader className="px-8 pt-8 pb-4 border-b border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <span
+                  className={`inline-block text-xs font-semibold px-3 py-1 rounded-full ${catColor}`}
+                >
+                  {post.category}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDate(post.timestamp)}
+                </span>
+              </div>
+              <DialogTitle className="font-serif text-2xl md:text-3xl font-bold text-foreground leading-snug">
+                {post.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="px-8 py-6">
+              <p className="text-foreground text-base leading-relaxed whitespace-pre-line">
+                {post.content}
+              </p>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Header ───────────────────────────────────────────────────────────────────
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -307,6 +373,11 @@ function Header() {
             size="sm"
             className="rounded-full bg-navy hover:bg-navy-light text-white"
             data-ocid="nav.primary_button"
+            onClick={() =>
+              document
+                .getElementById("subscribe")
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
           >
             Sign Up
           </Button>
@@ -442,7 +513,14 @@ function IntroSection() {
   const [activeCategory, setActiveCategory] = useState<BlogCategory>("All");
   const [activeProductCategory, setActiveProductCategory] =
     useState<ProductCategory>("All");
-  const allPosts = posts ?? [];
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+
+  const backendPosts = posts ?? [];
+  const backendTitles = new Set(backendPosts.map((p) => p.title));
+  const allPosts = [
+    ...STATIC_BLOG_POSTS.filter((p) => !backendTitles.has(p.title)),
+    ...backendPosts,
+  ];
   const filteredPosts = filterPosts(allPosts, activeCategory);
   const filteredProducts = filterProducts(
     STATIC_PRODUCTS,
@@ -451,6 +529,12 @@ function IntroSection() {
 
   return (
     <section id="home" className="relative">
+      {/* Blog Post Modal */}
+      <BlogPostModal
+        post={selectedPost}
+        onClose={() => setSelectedPost(null)}
+      />
+
       {/* Hero Banner */}
       <div
         className="relative min-h-[420px] md:min-h-[520px] flex items-center overflow-hidden"
@@ -564,7 +648,9 @@ function IntroSection() {
                                 </span>
                                 <button
                                   type="button"
+                                  onClick={() => setSelectedPost(post)}
                                   className="text-violet-600 text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all"
+                                  data-ocid={`blog.item.${i + 1}`}
                                 >
                                   Read More <ArrowRight size={14} />
                                 </button>
@@ -678,23 +764,41 @@ function AboutSection() {
 // ─── Contact Section ──────────────────────────────────────────────────────────
 function ContactSection() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const { mutate: submitFeedback, isPending, isSuccess } = useSubmitFeedback();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
       toast.error("Please fill in all fields.");
       return;
     }
-    submitFeedback(form, {
-      onSuccess: () => {
+    setIsPending(true);
+    try {
+      const response = await fetch("https://formspree.io/f/FORMSPREE_FORM_ID", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: form.message,
+        }),
+      });
+      if (response.ok) {
+        setIsSuccess(true);
         toast.success("Thanks for your message! I'll get back to you soon.");
         setForm({ name: "", email: "", message: "" });
-      },
-      onError: () => {
+      } else {
         toast.error("Something went wrong. Please try again.");
-      },
-    });
+      }
+    } catch {
+      toast.error("Network error. Please check your connection and try again.");
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (
@@ -952,7 +1056,7 @@ function Footer() {
           </div>
 
           {/* Subscribe */}
-          <div>
+          <div id="subscribe">
             <h4 className="font-serif font-bold text-white mb-2">
               Stay in the Loop
             </h4>
