@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
@@ -9,23 +8,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { useGetAllBlogPosts, useSubmitFeedback } from "@/hooks/useQueries";
-import {
-  ArrowRight,
-  ExternalLink,
-  Mail,
-  Menu,
-  NotebookPen,
-  Send,
-  ShoppingBag,
-  X,
-} from "lucide-react";
+import { ArrowRight, Mail, Menu, NotebookPen, Send, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { AffiliateProduct, BlogPost } from "./backend.d";
+import type { BlogPost } from "./backend.d";
 
 // Pinterest SVG icon
 function PinterestIcon({ size = 18 }: { size?: number }) {
@@ -46,28 +34,6 @@ function PinterestIcon({ size = 18 }: { size?: number }) {
 
 // ─── Static seed data ──────────────────────────────────────────────────────────
 
-const STATIC_PRODUCTS: AffiliateProduct[] = [
-  {
-    productId: 4n,
-    name: "Bajaj Splendid 120TS Induction Cooktop",
-    description:
-      "The Bajaj Splendid 120TS Induction Cooktop offers reliable everyday cooking with 1200W power, 7 preset menus, and an easy-to-use LED display. Its tempered glass surface adds a sleek look while making cleaning simple. Priced at ₹1,799, it's a practical and budget-friendly choice for quick, hassle-free meals.",
-    url: "https://amzn.to/4t1TfyA",
-    discount: "₹1,799",
-    price: "₹1,799",
-  },
-];
-
-// Product category lookup by productId (as string)
-const PRODUCT_CATEGORY_MAP: Record<string, string> = {
-  "4": "Kitchen Picks",
-};
-
-// Product image map by productId (as string)
-const PRODUCT_IMAGE_MAP: Record<string, string> = {
-  "4": "/assets/uploads/image-019d2377-3185-700f-825b-eb958b005c2a-1.png",
-};
-
 const STATIC_BLOG_POSTS: BlogPost[] = [
   {
     postId: 1n,
@@ -78,25 +44,16 @@ const STATIC_BLOG_POSTS: BlogPost[] = [
       "Happiness is often imagined as something large. But most of the time, it shows up quietly — in a familiar song, in a small pause between tasks.",
     category: "2-Minute Thoughts",
     author: "The Thinking Cat",
-    timestamp: 1742900000000000000n,
+    timestamp: 1742860800000n,
   },
 ];
+
 const BLOG_CATEGORIES = [
   "All",
   "Science & Reflections",
   "2-Minute Thoughts",
 ] as const;
 type BlogCategory = (typeof BLOG_CATEGORIES)[number];
-
-const PRODUCT_CATEGORIES = [
-  "All",
-  "Home & Living",
-  "Kitchen Picks",
-  "Smart Gadgets",
-  "Science Finds",
-  "Fashion Styles",
-] as const;
-type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
 
 const CATEGORY_COLORS: Record<string, string> = {
   "Affiliate Tips": "bg-violet-100 text-violet-800",
@@ -120,29 +77,6 @@ const CATEGORY_INACTIVE_STYLES: Record<BlogCategory, string> = {
     "bg-white text-rose-600 border-rose-200 hover:border-rose-400",
 };
 
-const PRODUCT_CATEGORY_ACTIVE_STYLES: Record<ProductCategory, string> = {
-  All: "bg-navy text-white border-navy",
-  "Home & Living": "bg-amber-600 text-white border-amber-600",
-  "Kitchen Picks": "bg-green-600 text-white border-green-600",
-  "Smart Gadgets": "bg-blue-600 text-white border-blue-600",
-  "Science Finds": "bg-teal-600 text-white border-teal-600",
-  "Fashion Styles": "bg-pink-500 text-white border-pink-500",
-};
-
-const PRODUCT_CATEGORY_INACTIVE_STYLES: Record<ProductCategory, string> = {
-  All: "bg-white text-navy border-navy/30 hover:border-navy/60",
-  "Home & Living":
-    "bg-white text-amber-700 border-amber-200 hover:border-amber-400",
-  "Kitchen Picks":
-    "bg-white text-green-700 border-green-200 hover:border-green-400",
-  "Smart Gadgets":
-    "bg-white text-blue-700 border-blue-200 hover:border-blue-400",
-  "Science Finds":
-    "bg-white text-teal-700 border-teal-200 hover:border-teal-400",
-  "Fashion Styles":
-    "bg-white text-pink-600 border-pink-200 hover:border-pink-400",
-};
-
 function formatDate(ts: bigint): string {
   return new Date(Number(ts)).toLocaleDateString("en-US", {
     year: "numeric",
@@ -154,16 +88,6 @@ function formatDate(ts: bigint): string {
 function filterPosts(posts: BlogPost[], category: BlogCategory): BlogPost[] {
   if (category === "All") return posts;
   return posts.filter((p) => p.category === category);
-}
-
-function filterProducts(
-  products: AffiliateProduct[],
-  category: ProductCategory,
-): AffiliateProduct[] {
-  if (category === "All") return products;
-  return products.filter(
-    (p) => PRODUCT_CATEGORY_MAP[String(p.productId)] === category,
-  );
 }
 
 // ─── Category Filter Pills (Blog) ─────────────────────────────────────────────
@@ -198,38 +122,6 @@ function CategoryFilterPills({
   );
 }
 
-// ─── Product Category Filter Pills ───────────────────────────────────────────
-function ProductCategoryFilterPills({
-  selected,
-  onChange,
-}: {
-  selected: ProductCategory;
-  onChange: (cat: ProductCategory) => void;
-}) {
-  return (
-    <div
-      className="flex flex-wrap justify-center gap-2 mb-8"
-      data-ocid="products.filter.tab"
-    >
-      {PRODUCT_CATEGORIES.map((cat) => (
-        <button
-          key={cat}
-          type="button"
-          onClick={() => onChange(cat)}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all duration-200 ${
-            selected === cat
-              ? PRODUCT_CATEGORY_ACTIVE_STYLES[cat]
-              : PRODUCT_CATEGORY_INACTIVE_STYLES[cat]
-          }`}
-          data-ocid="products.filter.tab"
-        >
-          {cat}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 // ─── Blog Empty State ─────────────────────────────────────────────────────────
 function BlogEmptyState() {
   return (
@@ -245,27 +137,6 @@ function BlogEmptyState() {
       </div>
       <p className="font-serif text-lg font-semibold text-foreground mb-1">
         No posts yet
-      </p>
-      <p className="text-muted-foreground text-sm">Check back soon.</p>
-    </motion.div>
-  );
-}
-
-// ─── Product Empty State ──────────────────────────────────────────────────────
-function ProductEmptyState({ category }: { category: ProductCategory }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="flex flex-col items-center justify-center py-14 text-center"
-      data-ocid="products.empty_state"
-    >
-      <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-        <ShoppingBag size={28} className="text-amber-400" />
-      </div>
-      <p className="font-serif text-lg font-semibold text-foreground mb-1">
-        No products in {category} yet
       </p>
       <p className="text-muted-foreground text-sm">Check back soon.</p>
     </motion.div>
@@ -424,108 +295,12 @@ function Header() {
   );
 }
 
-// ─── Intro Section (Hero + Tabs) ──────────────────────────────────────────────
-function ProductMiniCard({
-  product,
-  index,
-}: { product: AffiliateProduct; index: number }) {
-  const productImage = PRODUCT_IMAGE_MAP[String(product.productId)];
-  const isAmazonProduct = product.url.includes("amzn");
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.4 }}
-      data-ocid={`intro.product.item.${index + 1}`}
-    >
-      <Card className="shadow-card hover:shadow-card-hover transition-shadow duration-300 rounded-xl h-full flex flex-col bg-white overflow-hidden">
-        {productImage ? (
-          <div className="w-full h-40 overflow-hidden rounded-t-xl">
-            <img
-              src={productImage}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : null}
-        <CardContent className={`p-5 flex-1 ${productImage ? "" : ""}`}>
-          {!productImage && (
-            <div className="flex items-start justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-                <span className="font-serif font-bold text-navy text-base">
-                  {product.name.charAt(0)}
-                </span>
-              </div>
-              <Badge className="bg-violet-200 text-violet-900 border-none text-xs font-bold px-2">
-                {product.discount}
-              </Badge>
-            </div>
-          )}
-          {productImage && (
-            <div className="flex items-center justify-between mb-2">
-              <Badge className="bg-green-100 text-green-800 border-none text-xs font-bold px-2">
-                {product.discount}
-              </Badge>
-            </div>
-          )}
-          <h3 className="font-serif text-base font-bold text-foreground mb-2">
-            {product.name}
-          </h3>
-          <p className="text-muted-foreground text-xs leading-relaxed mb-3 line-clamp-4 whitespace-pre-line">
-            {product.description}
-          </p>
-          {!productImage && (
-            <p className="font-bold text-navy text-sm">{product.price}</p>
-          )}
-        </CardContent>
-        <CardFooter className="px-5 pb-5 pt-0">
-          <Button
-            size="sm"
-            className={`w-full rounded-full font-semibold text-xs ${
-              isAmazonProduct
-                ? "bg-amber-500 hover:bg-amber-600 text-white"
-                : "bg-violet-500 hover:bg-violet-600 text-white"
-            }`}
-            asChild
-            data-ocid={`intro.product.item.${index + 1}`}
-          >
-            <a href={product.url} target="_blank" rel="noopener noreferrer">
-              {isAmazonProduct ? (
-                <span className="flex items-center justify-center gap-1">
-                  Buy on Amazon <ArrowRight size={12} />
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-1">
-                  View Deal <ExternalLink size={12} />
-                </span>
-              )}
-            </a>
-          </Button>
-        </CardFooter>
-      </Card>
-    </motion.div>
-  );
-}
-
+// ─── Intro Section ────────────────────────────────────────────────────────────
 function IntroSection() {
-  const { data: posts } = useGetAllBlogPosts();
   const [activeCategory, setActiveCategory] = useState<BlogCategory>("All");
-  const [activeProductCategory, setActiveProductCategory] =
-    useState<ProductCategory>("All");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
-  const backendPosts = posts ?? [];
-  const backendTitles = new Set(backendPosts.map((p) => p.title));
-  const allPosts = [
-    ...STATIC_BLOG_POSTS.filter((p) => !backendTitles.has(p.title)),
-    ...backendPosts,
-  ];
-  const filteredPosts = filterPosts(allPosts, activeCategory);
-  const filteredProducts = filterProducts(
-    STATIC_PRODUCTS,
-    activeProductCategory,
-  );
+  const filteredPosts = filterPosts(STATIC_BLOG_POSTS, activeCategory);
 
   return (
     <section id="home" className="relative">
@@ -563,156 +338,85 @@ function IntroSection() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-violet-50 border-b border-violet-100">
+      {/* Blog Section */}
+      <div id="blog" className="bg-violet-50 border-b border-violet-100">
         <div className="max-w-container mx-auto px-4 md:px-8 py-12">
-          <Tabs defaultValue="blogs" className="w-full">
-            <div className="flex justify-center mb-8">
-              <TabsList className="bg-white shadow-card rounded-full p-1 h-auto gap-1">
-                <TabsTrigger
-                  value="blogs"
-                  className="rounded-full px-8 py-2.5 text-sm font-semibold data-[state=active]:bg-navy data-[state=active]:text-white transition-all"
-                  data-ocid="intro.tab"
-                >
-                  📝 Blogs
-                </TabsTrigger>
-                <TabsTrigger
-                  value="products"
-                  className="rounded-full px-8 py-2.5 text-sm font-semibold data-[state=active]:bg-navy data-[state=active]:text-white transition-all"
-                  data-ocid="intro.tab"
-                >
-                  🛍️ Product Reviews & Marketing
-                </TabsTrigger>
-              </TabsList>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="text-center mb-6">
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Fresh from the Blog
+              </h2>
+              <p className="text-muted-foreground max-w-lg mx-auto text-sm">
+                Deep-dives, guides, and real-world observations — written from
+                lived experience, no fluff.
+              </p>
             </div>
 
-            <TabsContent value="blogs">
+            <CategoryFilterPills
+              selected={activeCategory}
+              onChange={setActiveCategory}
+            />
+
+            <AnimatePresence mode="wait">
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                key={activeCategory}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
               >
-                <div className="text-center mb-6">
-                  <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-2">
-                    Fresh from the Blog
-                  </h2>
-                  <p className="text-muted-foreground max-w-lg mx-auto text-sm">
-                    Deep-dives, guides, and real-world observations — written
-                    from lived experience, no fluff.
-                  </p>
-                </div>
-
-                <CategoryFilterPills
-                  selected={activeCategory}
-                  onChange={setActiveCategory}
-                />
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeCategory}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    {filteredPosts.length === 0 ? (
-                      <BlogEmptyState />
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        {filteredPosts.map((post, i) => {
-                          const catColor =
-                            CATEGORY_COLORS[post.category] ??
-                            "bg-violet-100 text-violet-800";
-                          return (
-                            <Card
-                              key={String(post.postId)}
-                              className="overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300 rounded-xl h-full flex flex-col"
+                {filteredPosts.length === 0 ? (
+                  <BlogEmptyState />
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    {filteredPosts.map((post, i) => {
+                      const catColor =
+                        CATEGORY_COLORS[post.category] ??
+                        "bg-violet-100 text-violet-800";
+                      return (
+                        <Card
+                          key={String(post.postId)}
+                          className="overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300 rounded-xl h-full flex flex-col"
+                          data-ocid={`blog.item.${i + 1}`}
+                        >
+                          <CardContent className="p-5 flex-1">
+                            <span
+                              className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${catColor}`}
+                            >
+                              {post.category}
+                            </span>
+                            <h3 className="font-serif text-lg font-bold text-foreground leading-snug mb-2">
+                              {post.title}
+                            </h3>
+                            <p className="text-muted-foreground text-sm leading-relaxed">
+                              {post.excerpt}
+                            </p>
+                          </CardContent>
+                          <CardFooter className="px-5 pb-5 pt-0 flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">
+                              {formatDate(post.timestamp)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedPost(post)}
+                              className="text-violet-600 text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all"
                               data-ocid={`blog.item.${i + 1}`}
                             >
-                              <CardContent className="p-5 flex-1">
-                                <span
-                                  className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${catColor}`}
-                                >
-                                  {post.category}
-                                </span>
-                                <h3 className="font-serif text-lg font-bold text-foreground leading-snug mb-2">
-                                  {post.title}
-                                </h3>
-                                <p className="text-muted-foreground text-sm leading-relaxed">
-                                  {post.excerpt}
-                                </p>
-                              </CardContent>
-                              <CardFooter className="px-5 pb-5 pt-0 flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground">
-                                  {formatDate(post.timestamp)}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedPost(post)}
-                                  className="text-violet-600 text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all"
-                                  data-ocid={`blog.item.${i + 1}`}
-                                >
-                                  Read More <ArrowRight size={14} />
-                                </button>
-                              </CardFooter>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+                              Read More <ArrowRight size={14} />
+                            </button>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
               </motion.div>
-            </TabsContent>
-
-            <TabsContent value="products">
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <div className="text-center mb-6">
-                  <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-2">
-                    Honest Product Reviews & Marketing
-                  </h2>
-                  <p className="text-muted-foreground max-w-lg mx-auto text-sm">
-                    Handpicked tools and services I personally use and
-                    recommend. Each review is thorough, unbiased, and comes from
-                    lived experience.
-                  </p>
-                </div>
-
-                <ProductCategoryFilterPills
-                  selected={activeProductCategory}
-                  onChange={setActiveProductCategory}
-                />
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeProductCategory}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    {filteredProducts.length === 0 ? (
-                      <ProductEmptyState category={activeProductCategory} />
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredProducts.map((product, i) => (
-                          <ProductMiniCard
-                            key={String(product.productId)}
-                            product={product}
-                            index={i}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -735,7 +439,7 @@ function AboutSection() {
             About Me
           </p>
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">
-            Hi, I'm Anuja — Researcher, Writer &amp; Affiliate Blogger
+            Hi, I'm Anuja — Researcher & Writer
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-5 text-base">
             By profession, I work in research. By nature, I observe, question,
@@ -751,9 +455,7 @@ function AboutSection() {
           <p className="text-muted-foreground leading-relaxed text-base">
             This site is my open notebook. Every idea, perspective, and
             recommendation you find here comes from lived experience — no noise,
-            no unnecessary complexity. Just thoughts, observed and shared. Along
-            the way, I began exploring blogging and affiliate marketing as a way
-            to share what I learn and experience.
+            no unnecessary complexity. Just thoughts, observed and shared.
           </p>
         </motion.div>
       </div>
