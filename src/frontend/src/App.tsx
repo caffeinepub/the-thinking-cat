@@ -46,6 +46,17 @@ const STATIC_BLOG_POSTS: BlogPost[] = [
     author: "The Thinking Cat",
     timestamp: 1742860800000n,
   },
+  {
+    postId: 2n,
+    title: "When Effort Becomes Imbalance",
+    content:
+      "(Her effort, his silence — and the biology of feedback loops, simply understood).\n\nShe didn't fall out of love.\nShe just kept trying to hold it together, even when it was slowly falling apart.\nAt the beginning, things felt easy. Balanced. Natural.\nLike Homeostasis where everything works without force similar to biology.\n\nYour body has a smart way of staying stable. It uses something called feedback loops.\n\n1. The \"balance\" system — Negative Feedback Loop\nThis is the healthy one. It simply means: If something goes wrong, fix it and come back to normal.\nEg: Too hot? → You sweat, Too cold? → You shiver. Your body doesn't panic. It adjusts just enough.\n\n2. The \"overdoing\" system — Positive Feedback Loop\nThis one increases things. If something starts, push it more and more.\nEg: A small cut → clotting keeps increasing until it closes\nor Contractions → keep getting stronger until delivery.\nThis is useful… but only for a short time.\n\nNow, Her Story: When things between them started changing,\nshe didn't step back.\nShe tried to fix it.\nAt first, it was small: He replied less → she messaged more.\nHe seemed distant → she explained more, Something felt off → she gave more. She thought she was maintaining balance.\nBut she wasn't. She had unknowingly shifted from\nnegative feedback (balance) to positive feedback (overdoing).\n\nWhat He Felt: From his side, it felt different. Her effort didn't always feel like comfort anymore. Sometimes it felt like pressure, sometimes like something he couldn't match. So instead of adjusting back, he slowly pulled away.\nShe moved closer → he stepped back\nShe tried harder → he became quieter\n\nThe Real Problem:",
+    excerpt:
+      "She didn't fall out of love. She just kept trying to hold it together — and unknowingly shifted from balance to overdoing. The biology of feedback loops, simply understood.",
+    category: "Science & Reflections",
+    author: "The Thinking Cat",
+    timestamp: 1743292800000n,
+  },
 ];
 
 const BLOG_CATEGORIES = [
